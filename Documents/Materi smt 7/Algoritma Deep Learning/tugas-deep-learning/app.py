@@ -12,18 +12,21 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# YOLO
+# =============================
+# YOLOv8 INIT
+# =============================
 try:
     from ultralytics import YOLO
     import cv2
     from PIL import Image
     YOLO_AVAILABLE = True
+    yolo_model = YOLO("yolov8n.pt")  # pastikan file ada di root folder
 except Exception as e:
     print("YOLO ERROR:", e)
     YOLO_AVAILABLE = False
+    yolo_model = None
 
 app = Flask(__name__, template_folder="templates")
-
 
 # =========================
 # ROUTES - PAGES
@@ -32,21 +35,17 @@ app = Flask(__name__, template_folder="templates")
 def index():
     return render_template("index.html")
 
-
 @app.route("/kalkulator")
 def kalkulator_page():
     return render_template("kalkulator.html")
-
 
 @app.route("/generate")
 def generate_page():
     return render_template("generate.html")
 
-
 @app.route("/saham")
 def saham_page():
     return render_template("saham.html")
-
 
 @app.route("/object")
 def object_page():
@@ -85,6 +84,7 @@ def api_logic():
         ]
 
         return jsonify({"ok": True, "result": result, "truth_table": truth_table})
+
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
@@ -133,10 +133,11 @@ def api_predict_stock():
                     "prediksi_terakhir": f"Rp {preds[-1]:,.0f}".replace(",", ".")
                 })
 
+        # fallback
         last = random.uniform(1000, 10000)
         preds = [round(last * (1 + random.uniform(-0.02, 0.02) * i/10), 2) for i in range(days)]
-
         labels = [f"Hari ke-{i+1}" for i in range(days)]
+
         return jsonify({
             "ok": True,
             "symbol": kode or "DEMO",
@@ -147,6 +148,7 @@ def api_predict_stock():
             "predictions": preds,
             "prediksi_terakhir": f"Rp {preds[-1]:,.0f}"
         })
+
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
@@ -158,18 +160,25 @@ def api_predict_stock():
 def api_object_detect():
     try:
         if not YOLO_AVAILABLE:
-            return jsonify({"ok": False, "msg": "YOLOv8 tidak tersedia di environment ini"}), 500
-
-        yolo_model = YOLO("models/yolov8n.pt")
+            return jsonify({"ok": False, "msg": "YOLOv8 tidak tersedia di server"}), 500
 
         if "image" not in request.files:
-            return jsonify({"ok": False, "msg": "Tidak ada gambar"}), 400
+            return jsonify({"ok": False, "msg": "Tidak ada file gambar"}), 400
 
         file = request.files["image"]
-        img = Image.open(file.stream).convert("RGB")
-        results = yolo_model(np.array(img), verbose=False)[0]
+        img_bytes = file.read()
 
-        np_img = np.array(img)
+        # Decode image safely (supports JPG, PNG, WEBP)
+        np_arr = np.frombuffer(img_bytes, np.uint8)
+        np_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+        if np_img is None:
+            return jsonify({"ok": False, "msg": "Format gambar tidak didukung"}), 400
+
+        img_rgb = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
+
+        results = yolo_model(img_rgb)[0]
+
         detected_objects = []
 
         for box in results.boxes:
@@ -180,17 +189,16 @@ def api_object_detect():
 
             cv2.rectangle(np_img, (x1, y1), (x2, y2), (255, 0, 255), 2)
             cv2.putText(np_img, f"{label} {conf:.2f}", (x1, y1 - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 1)
 
             detected_objects.append({
                 "label": label,
                 "confidence": round(conf * 100, 2)
             })
 
-        pil_out = Image.fromarray(np_img)
-        buff = BytesIO()
-        pil_out.save(buff, format="JPEG")
-        base64_img = base64.b64encode(buff.getvalue()).decode()
+        # Encode back to base64
+        _, buffer = cv2.imencode(".jpg", np_img)
+        base64_img = base64.b64encode(buffer).decode()
 
         return jsonify({
             "ok": True,
@@ -204,7 +212,7 @@ def api_object_detect():
 
 
 # =========================
-# RUN
+# RUN LOCAL
 # =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
