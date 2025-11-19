@@ -27,11 +27,14 @@
 
         .card {
             background: #fff6fb;
-            border: 2px solid #f7cce4;
+            border-style: dashed;
+            border-color: #f7cce4;
+            border-width: 2px;
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(255, 100, 180, 0.15);
             margin-top: 20px;
+            box-sizing: border-box; /* FIX agar kotak tidak overflow */
         }
 
         input[type="file"] {
@@ -41,6 +44,7 @@
             padding: 15px;
             border-radius: 15px;
             cursor: pointer;
+            box-sizing: border-box; /* FIX utama */
         }
 
         .btn {
@@ -135,7 +139,6 @@
         let formData = new FormData();
         formData.append("image", fileInput.files[0]);
 
-        // ⭐ URL FIXED — now calling Flask server correctly
         fetch("/api/object_detect", {
             method: "POST",
             body: formData
@@ -150,25 +153,24 @@
                 return;
             }
 
+            // Tampilkan gambar hasil deteksi
             document.getElementById("resultImage").src = "data:image/jpeg;base64," + data.image;
             document.getElementById("resultBox").style.display = "block";
 
+            // Tampilkan daftar objek
             let listBox = document.getElementById("labelList");
-listBox.innerHTML = "";
+            listBox.innerHTML = "";
 
-if (!data.found || !data.objects || data.objects.length === 0) {
-    listBox.innerHTML = "<li>Tidak ada objek terdeteksi</li>";
-    return;
-}
+            if (!data.objects || data.objects.length === 0) {
+                listBox.innerHTML = "<li>Tidak ada objek terdeteksi</li>";
+                return;
+            }
 
-data.objects.forEach(obj => {
-    let li = document.createElement("li");
-    li.textContent = `${obj.label} — ${obj.confidence}%`;
-    listBox.appendChild(li);
-});
-
-
-
+            data.objects.forEach(obj => {
+                let li = document.createElement("li");
+                li.textContent = `${obj.label} — ${obj.confidence}%`;
+                listBox.appendChild(li);
+            });
         })
         .catch(err => {
             document.getElementById("loading").style.display = "none";
