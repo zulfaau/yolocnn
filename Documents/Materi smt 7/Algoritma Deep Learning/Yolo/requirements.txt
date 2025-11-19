@@ -1,0 +1,5 @@
+ultralytics==8.2.85
+torch==2.4.0
+opencv-python-headless
+numpy
+flask
