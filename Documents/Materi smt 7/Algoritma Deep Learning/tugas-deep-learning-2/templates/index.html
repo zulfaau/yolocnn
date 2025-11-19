@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Tugas Mata Kuliah Algoritma Deep Learning</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: #fff7f9;
+        margin: 0;
+        padding: 0;
+        color: #7a2841;
+    }
+
+    header {
+        background: linear-gradient(135deg, #fde2e4, #fbc4c4);
+        color: #7a2841;
+        padding: 25px 0;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border-bottom-left-radius: 25px;
+        border-bottom-right-radius: 25px;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 26px;
+    }
+
+    .meta {
+        font-size: 14px;
+        margin-top: 5px;
+        background: rgba(255, 255, 255, 0.5);
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 8px;
+        color: #b91c1c;
+        font-weight: 500;
+    }
+
+    .container {
+        display: flex;
+        min-height: calc(100vh - 120px);
+    }
+
+    .sidebar {
+        position: relative;
+        background: linear-gradient(180deg, #fff0f3, #fde2e4);
+        color: #7a2841;
+        width: 260px;
+        padding: 25px;
+        box-shadow: 4px 0 10px rgba(0,0,0,0.03);
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s ease;
+    }
+
+    .sidebar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 20px;
+        height: 100%;
+        background: linear-gradient(to right, rgba(253, 226, 228, 0), rgba(251, 196, 196, 0.25));
+        pointer-events: none;
+    }
+
+    .sidebar h2 {
+        font-size: 18px;
+        border-bottom: 2px solid #f9a8d4;
+        padding-bottom: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #9d174d;
+        font-weight: 600;
+    }
+
+    .arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .rotate {
+        transform: rotate(90deg);
+    }
+
+    .menu-content {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: all 0.4s ease;
+    }
+
+    .menu-content.open {
+        max-height: 400px;
+        opacity: 1;
+    }
+
+    .sidebar a {
+        color: #a12d5d;
+        display: block;
+        padding: 10px 0 10px 10px;
+        text-decoration: none;
+        font-size: 16px;
+        border-radius: 10px;
+        margin-top: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .sidebar a:hover {
+        background-color: rgba(255, 192, 203, 0.35);
+        color: #c2185b;
+        transform: translateX(5px);
+        box-shadow: 0 2px 6px rgba(249, 168, 212, 0.25);
+    }
+
+    .main-area {
+        flex: 1;
+        padding: 40px;
+        background-color: #ffffff;
+    }
+
+    .panel {
+        background-color: #fff0f5;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        border: 2px solid #fde2e4;
+        animation: fadeIn 0.8s ease;
+    }
+
+    .panel h3 {
+        color: #7a2841;
+    }
+
+    footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 13px;
+        color: #9d174d;
+        background: #fde2e4;
+        border-top: 2px solid #fbc4c4;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Tugas Mata Kuliah Algoritma Deep Learning</h1>
+    <div class="meta">
+        Nama: <b>Zulfa Aulia Hanafi</b> | NPM: <b>51422690</b> | Kelas: <b>4IA08</b>
+    </div>
+</header>
+
+<div class="container">
+    <aside class="sidebar">
+        <h2 id="toggleMenu">Daftar Tugas <span class="arrow">▶</span></h2>
+
+        <div class="menu-content" id="menuContent">
+
+            <!-- 1. LOGIC CALCULATOR -->
+            <a href="{{ url_for('kalkulator_page') }}">
+                <i class="fa-solid fa-calculator"></i> Calculator Operator Logika
+            </a>
+
+            <!-- 2. GENERATE TEKS -->
+           <a href="{{ url_for('generate_page') }}">
+                <i class="fa-solid fa-pen"></i> Prediksi Kata (Teks)
+            </a>
+
+            <!-- 3. SAHAM -->
+            <a href="{{ url_for('saham_page') }}">
+                <i class="fa-solid fa-chart-line"></i> Prediksi Harga Saham
+            </a>
+
+            <!-- 4. DETEKSI OBJEK (dipindah ke paling bawah) -->
+            <a href="{{ url_for('object_page') }}">
+                <i class="fa-solid fa-bullseye"></i> Mengenal Object
+            </a>
+
+        </div>
+    </aside>
+
+    <main class="main-area">
+        <div class="panel">
+            <h3>Selamat Datang 💗</h3>
+            <p>
+                Pilih tugas di sebelah kiri untuk membuka halaman dan mencoba interaktifnya.<br><br>
+                <i>Setiap tugas memiliki API Flask tersendiri untuk simulasi hasil pembelajaran.</i>
+            </p>
+        </div>
+    </main>
+</div>
+
+<footer>
+    © 2025 Zulfa Aulia Hanafi — Deep Learning Project 💗
+</footer>
+
+<script>
+const toggleMenu = document.getElementById('toggleMenu');
+const menuContent = document.getElementById('menuContent');
+const arrow = document.querySelector('.arrow');
+
+toggleMenu.addEventListener('click', () => {
+    menuContent.classList.toggle('open');
+    arrow.classList.toggle('rotate');
+});
+</script>
+
+</body>
+</html>

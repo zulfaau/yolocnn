@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💗 Prediksi Harga Saham</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fde2e4, #fbc4c4);
+            margin: 0;
+            padding: 0;
+            color: #7a2841;
+        }
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #fbc4c4, #fde2e4);
+            padding: 25px 0;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 26px; }
+        header p {
+            font-size: 14px;
+            background: rgba(255,255,255,0.5);
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .container {
+            background: #fff;
+            max-width: 750px;
+            margin: 40px auto;
+            border-radius: 20px;
+            padding: 35px 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #fde2e4;
+            animation: fadeIn 0.7s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #7a2841;
+            margin-bottom: 10px;
+        }
+        p.text-muted {
+            text-align: center;
+            color: #7a2841b0 !important;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #7a2841;
+            display: block;
+            margin-top: 12px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #fbc4c4;
+            border-radius: 10px;
+            margin-top: 6px;
+            background: #fff0f5;
+            color: #7a2841;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #ec4899;
+            box-shadow: 0 0 5px #f9a8d4;
+        }
+
+        button.btn-primary {
+            background: #ec4899;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 25px;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.25s;
+        }
+        button.btn-primary:hover {
+            background: #db2777;
+            transform: scale(1.03);
+        }
+
+        #result-box {
+            background: #ffe4ec;
+            border-left: 6px solid #ec4899;
+            padding: 18px 20px;
+            border-radius: 12px;
+            display: none;
+            margin-top: 25px;
+            border: 1px solid #f9a8d4;
+        }
+
+        /* ================
+           FIX UKURAN CHART
+           ================ */
+        canvas {
+            width: 100% !important;
+            height: 300px !important;
+            max-height: 300px !important;
+
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #fbc4c4;
+            display: block;
+        }
+
+        a.btn-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #ec4899;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+            color: #9d174d;
+            background: #fde2e4;
+            border-top: 1px solid #fbc4c4;
+            margin-top: 40px;
+        }
+
+        .small-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .muted {
+            color: #7a2841b0;
+            font-size: 13px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity:0; transform:translateY(10px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>📊 Prediksi & Analisis Harga Saham</h1>
+    <p>RNN — LSTM — GRU — Bidirectional</p>
+</header>
+
+<div class="container">
+    <h2>✨ Prediksi Saham Otomatis</h2>
+    <p class="text-muted">Masukkan simbol, pilih model, window, dan jumlah hari prediksi.</p>
+
+    <form id="stockForm">
+        <label>Simbol Saham:</label>
+        <input type="text" id="symbol" value="BBCA" required>
+
+        <label>Pilih Model:</label>
+        <select id="model">
+            <option value="LSTM">LSTM</option>
+            <option value="GRU">GRU</option>
+            <option value="Bidirectional LSTM">Bidirectional LSTM</option>
+            <option value="Vanilla RNN">Vanilla RNN</option>
+        </select>
+
+        <div class="small-row">
+            <div>
+                <label>Jumlah Hari Prediksi (1–30):</label>
+                <input type="number" id="days" value="7" min="1" max="30">
+            </div>
+            <div>
+                <label>Window (3–30):</label>
+                <input type="number" id="window" value="7" min="3" max="30">
+            </div>
+        </div>
+
+        <label>Epochs:</label>
+        <input type="number" id="epochs" value="3" min="1" max="10">
+
+        <button class="btn-primary" type="submit">🚀 Jalankan Prediksi</button>
+    </form>
+
+    <div id="result-box">
+        <h5>💡 Hasil Prediksi</h5>
+
+        <p><strong>Model:</strong> <span id="modelUsed"></span></p>
+        <p><strong>Simbol:</strong> <span id="symbolUsed"></span></p>
+        <p><strong>Periode Prediksi:</strong>
+            <span id="daysUsed"></span> hari (window: <span id="winUsed"></span>)
+        </p>
+
+        <p id="prediction"></p>
+
+        <h6>📈 Grafik Prediksi vs Aktual</h6>
+        <canvas id="comparisonChart"></canvas>
+
+        <h6 style="margin-top:25px;">📊 Grafik Prediksi</h6>
+        <canvas id="stockChart"></canvas>
+    </div>
+
+    <a class="btn-link" href="/">← Kembali ke Beranda</a>
+</div>
+
+<footer>© 2025 Zulfa Aulia Hanafi — Prediksi Saham 💗</footer>
+
+<script>
+let chartPred = null;
+let chartComp = null;
+
+document.getElementById("stockForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const symbol = document.getElementById("symbol").value.trim();
+    const model = document.getElementById("model").value;
+    const days = Number(document.getElementById("days").value);
+    const window = Number(document.getElementById("window").value);
+    const epochs = Number(document.getElementById("epochs").value);
+
+    const btn = document.querySelector(".btn-primary");
+    btn.disabled = true;
+    btn.textContent = "⏳ Memproses...";
+
+    try {
+        const res = await fetch("/api/predict_stock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symbol, model, days, window, epochs })
+        });
+
+        const data = await res.json();
+        if (!data.ok) { alert(data.error); return; }
+
+        let labels = data.labels;
+        let predicted = data.predictions;
+        let actual = data.actual;
+
+        const maxLen = Math.max(labels.length, predicted.length, actual.length);
+
+        const normalize = arr => {
+            const out = [...arr];
+            while (out.length < maxLen) out.push(NaN);
+            return out;
+        };
+
+        labels = normalize(labels);
+        predicted = normalize(predicted);
+        actual = normalize(actual);
+
+        document.getElementById("result-box").style.display = "block";
+        document.getElementById("modelUsed").textContent = data.model;
+        document.getElementById("symbolUsed").textContent = data.symbol;
+        document.getElementById("daysUsed").textContent = data.days;
+        document.getElementById("winUsed").textContent = data.window;
+
+        document.getElementById("prediction").innerHTML =
+            `<strong>${data.prediksi_terakhir}</strong><br><small class="muted">Perkiraan ${data.days} hari ke depan</small>`;
+
+        const ctx1 = document.getElementById("stockChart").getContext("2d");
+        const ctx2 = document.getElementById("comparisonChart").getContext("2d");
+
+        if (chartPred) chartPred.destroy();
+        if (chartComp) chartComp.destroy();
+
+        chartPred = new Chart(ctx1, {
+            type: "line",
+            data: {
+                labels,
+                datasets: [{
+                    label: "Prediksi",
+                    data: predicted,
+                    borderColor: "#ec4899",
+                    backgroundColor: "rgba(236,72,153,0.25)",
+                    borderWidth: 2,
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        chartComp = new Chart(ctx2, {
+            type: "line",
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: "Aktual",
+                        data: actual,
+                        borderColor: "#ff6b6b",
+                        backgroundColor: "rgba(255,107,107,0.25)",
+                        borderWidth: 2,
+                    },
+                    {
+                        label: "Prediksi",
+                        data: predicted,
+                        borderColor: "#7a2841",
+                        backgroundColor: "rgba(122,40,65,0.25)",
+                        borderWidth: 2,
+                    }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error.");
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "🚀 Jalankan Prediksi";
+    }
+});
+</script>
+
+</body>
+</html>

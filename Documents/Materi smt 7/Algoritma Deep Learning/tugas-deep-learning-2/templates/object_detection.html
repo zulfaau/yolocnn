@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mengenal Object</title>
+    <style>
+        body {
+            font-family: "Poppins", Arial, sans-serif;
+            max-width: 720px;
+            margin: auto;
+            padding: 20px;
+            background: #ffeef7; /* soft pink */
+        }
+
+        h2 {
+            text-align: center;
+            color: #d84b93;
+            margin-bottom: 10px;
+        }
+
+        p {
+            text-align: center;
+            color: #8b386a;
+            font-size: 15px;
+        }
+
+        .card {
+            background: #fff6fb;
+            border-style: dashed;
+            border-color: #f7cce4;
+            border-width: 2px;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(255, 100, 180, 0.15);
+            margin-top: 20px;
+            box-sizing: border-box; /* FIX agar kotak tidak overflow */
+        }
+
+        input[type="file"] {
+            background: #ffffff;
+            width: 100%;
+            border: 2px dashed #f3a6d0;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            box-sizing: border-box; /* FIX utama */
+        }
+
+        .btn {
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: #ff8ac6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #ff6bb8;
+        }
+
+        .preview-box, .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 20px;
+            background: #fff1fa;
+            border: 1px solid #f7cce4;
+            box-shadow: 0 3px 10px rgba(255, 167, 209, 0.2);
+        }
+
+        img {
+            width: 100%;
+            border-radius: 15px;
+        }
+
+        .loading {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #d84b93;
+            text-align: center;
+        }
+
+        ul {
+            margin-top: 10px;
+            color: #6b2a4f;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Mengenal Object (YOLOv8)</h2>
+    <p>Upload gambar lalu klik tombol detect 💗</p>
+
+    <div class="card">
+        <input type="file" id="imageInput" accept="image/*">
+        <button class="btn" onclick="detectObject()">Mengenal Object</button>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">Processing... ✨</div>
+
+    <div class="preview-box" id="previewBox" style="display: none;">
+        <h3 style="color:#d84b93;">Preview Gambar</h3>
+        <img id="previewImage">
+    </div>
+
+    <div class="result-box" id="resultBox" style="display: none;">
+        <h3 style="color:#d84b93;">Hasil Mengenal Object</h3>
+        <img id="resultImage">
+        <h4 style="color:#b0437e; margin-top:15px;">Daftar Objek Terdeteksi:</h4>
+        <ul id="labelList"></ul>
+    </div>
+
+<script>
+
+    // Preview Image
+    document.getElementById("imageInput").addEventListener("change", function(event) {
+        let img = document.getElementById("previewImage");
+        img.src = URL.createObjectURL(event.target.files[0]);
+        document.getElementById("previewBox").style.display = "block";
+    });
+
+    // Send to API
+    function detectObject() {
+        let fileInput = document.getElementById("imageInput");
+        if (fileInput.files.length === 0) {
+            alert("Pilih gambar dulu!");
+            return;
+        }
+
+        document.getElementById("loading").style.display = "block";
+
+        let formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+
+        fetch("/api/object_detect", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            document.getElementById("loading").style.display = "none";
+
+            if (!data.ok) {
+                alert("Gagal mendeteksi objek: " + (data.error || data.msg));
+                return;
+            }
+
+            // Tampilkan gambar hasil deteksi
+            document.getElementById("resultImage").src = "data:image/jpeg;base64," + data.image;
+            document.getElementById("resultBox").style.display = "block";
+
+            // Tampilkan daftar objek
+            let listBox = document.getElementById("labelList");
+            listBox.innerHTML = "";
+
+            if (!data.objects || data.objects.length === 0) {
+                listBox.innerHTML = "<li>Tidak ada objek terdeteksi</li>";
+                return;
+            }
+
+            data.objects.forEach(obj => {
+                let li = document.createElement("li");
+                li.textContent = `${obj.label} — ${obj.confidence}%`;
+                listBox.appendChild(li);
+            });
+        })
+        .catch(err => {
+            document.getElementById("loading").style.display = "none";
+            alert("Terjadi error.");
+            console.error(err);
+        });
+    }
+
+</script>
+
+</body>
+</html>

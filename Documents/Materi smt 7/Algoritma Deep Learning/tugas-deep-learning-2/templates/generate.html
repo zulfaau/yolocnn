@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>💗 Generator Teks dengan Varian RNN</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fde2e4, #fbc4c4);
+            margin: 0;
+            padding: 0;
+            color: #7a2841;
+        }
+
+        header {
+            text-align: center;
+            background: linear-gradient(135deg, #fbc4c4, #fde2e4);
+            color: #7a2841;
+            padding: 25px 0;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #b91c1c;
+            font-weight: 500;
+            background: rgba(255,255,255,0.4);
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .container {
+            background: #fff;
+            max-width: 700px;
+            margin: 40px auto;
+            border-radius: 20px;
+            padding: 30px 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #fde2e4;
+            animation: fadeIn 0.8s ease;
+        }
+
+        h2 {
+            color: #7a2841;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p.desc {
+            text-align: center;
+            font-size: 14px;
+            color: #7a2841b0;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 500;
+            color: #7a2841;
+            display: block;
+            margin-top: 12px;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #fbc4c4;
+            border-radius: 10px;
+            margin-top: 6px;
+            background: #fff0f5;
+            color: #7a2841;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            border-color: #ec4899;
+            box-shadow: 0 0 5px #f9a8d4;
+        }
+
+        input[type="number"], input[type="range"] {
+            width: 100%;
+        }
+
+        button {
+            background: #ec4899;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #db2777;
+            transform: scale(1.03);
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #fbc4c4;
+            margin: 25px 0;
+        }
+
+        #output {
+            background: #ffe4ec;
+            border-radius: 10px;
+            padding: 15px;
+            color: #7a2841;
+            border: 1px solid #f9a8d4;
+            white-space: pre-wrap;
+            font-family: "Courier New", monospace;
+            min-height: 80px;
+        }
+
+        #plot {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #ec4899;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            color: #db2777;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #9d174d;
+            font-size: 13px;
+            background: #fde2e4;
+            border-top: 1px solid #fbc4c4;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <script>
+        async function generateText() {
+            const text = document.getElementById('text').value;
+            const model = document.getElementById('model').value;
+            const seed = document.getElementById('seed').value;
+            const length = document.getElementById('length').value;
+            const epochs = document.getElementById('epochs').value;
+
+            const output = document.getElementById('output');
+            const plot = document.getElementById('plot');
+
+            output.textContent = "⏳ Sedang melatih model dan memproses teks...";
+            plot.innerHTML = "";
+
+            try {
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, model, seed, length, epochs })
+                });
+
+                const data = await res.json();
+
+                if (data.ok) {
+                    output.textContent = data.generated;
+                    if (data.plot) plot.innerHTML = data.plot;
+                } else {
+                    output.textContent = "❌ " + data.error;
+                }
+            } catch (err) {
+                output.textContent = "⚠️ Gagal terhubung ke server.";
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>🧠 Tugas 2 Generator Teks dengan Varian RNN</h1>
+        <p>Zulfa Aulia Hanafi — NPM: 51422690 | Kelas: 4IA08</p>
+    </header>
+
+    <div class="container">
+        <h2>✨ Perbandingan Model: RNN, LSTM, GRU, Bidirectional RNN</h2>
+        <p class="desc">Masukkan teks, pilih model, dan hasilkan prediksi karakter berikutnya menggunakan berbagai arsitektur Recurrent Neural Network.</p>
+
+        <label>📝 Masukkan Teks untuk Pelatihan:</label>
+        <textarea id="text" rows="6">Ini adalah contoh teks yang digunakan oleh Recurrent Neural Network. Model deep learning ini mempelajari pola urutan karakter untuk memprediksi karakter berikutnya.</textarea>
+
+        <label>🔧 Pilih Model:</label>
+        <select id="model">
+            <option>LSTM</option>
+            <option>Vanilla RNN</option>
+            <option>Bidirectional RNN</option>
+            <option>GRU</option>
+        </select>
+
+        <label>🌱 Seed Text:</label>
+        <input id="seed" value="ini adalah">
+
+
+        <label>🧩 Jumlah Karakter yang Dihasilkan:</label>
+        <input type="number" id="length" value="100">
+
+        <label>📈 Jumlah Epoch:</label>
+        <input type="number" id="epochs" value="100">
+
+        <button onclick="generateText()">🚀 Jalankan Model & Hasilkan Teks</button>
+
+        <hr>
+        <h3>📜 Hasil Prediksi:</h3>
+        <pre id="output"></pre>
+
+        <div id="plot"></div>
+
+        <a href="/" class="back-link">← Kembali ke Beranda</a>
+    </div>
+
+    <footer>© 2025 Zulfa Aulia Hanafi — Generator Teks RNN 💗</footer>
+</body>
+</html>
